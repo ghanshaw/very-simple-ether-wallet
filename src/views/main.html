@@ -1,0 +1,66 @@
+<div class="balance">
+Balance: {{ balance }} - BalanceInEther: {{ balanceInEther }}
+</div>
+
+<div class="deposit">
+    <h1>Deposits</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Hash</th>
+                <th>Block</th>
+                <th>From</th>
+                <th>Amount</th>
+                <th>Gas</th>   
+            </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="deposit in depositList">
+            <td>{{ deposit.time }}</td>
+            <td>{{ deposit.transactionHash }}</td>
+            <td>{{ deposit.blockNumber }}</td>
+            <td>{{ deposit.args._sender }}</td>
+            <td>{{ deposit.ether }}</td>
+            <td>{{ Gas }}</td>            
+        </tr>
+        </tbody>
+    </table>
+
+    <div ng-repeat="deposit in depositList">
+        <div>{{ deposit }}</div>
+        <div>Amount: {{ deposit.args.ether }}</div>
+        <div>Trasaction: {{ deposit.transactionHash }}</div>
+    </div>
+</div>
+
+
+<div class="withdrawal">
+<h1>Withdrawals</h1>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Time</th>
+            <th>Hash</th>
+            <th>Block</th>
+            <th>From</th>
+            <th>Amount</th>
+            <th>Gas</th>   
+        </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="withdrawal in withdrawalList">
+        <td>{{ withdrawal.time }}</td>
+        <td>{{ withdrawal.transactionHash }}</td>
+        <td>{{ withdrawal.blockNumber }}</td>
+        <td>{{ withdrawal.args.recipient }}</td>
+        <td>{{ withdrawal.args.amount.toNumber() }}</td>
+        <td>{{ Gas }}</td>            
+    </tr>
+    </tbody>
+</table>
+
+</div>

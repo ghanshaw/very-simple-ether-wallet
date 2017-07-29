@@ -1,0 +1,113 @@
+<div class="container">
+
+    <p>{{ demoAccounts }}</p>
+
+    <div class="row demos">
+
+        <p>I have made three accounts available for demonstration purposes. Feel free to use these accounts to move
+        funds in and out of this wallet. You can also send funds directly to this wallet if you wise</p>
+
+        <div class="col-md-4">
+            <h4>Account A</h4>
+            <h5>Address: {{ demoAccounts[0].address }}</h5>
+            <h5>Balance: {{ demoAccounts[0].balance }}</h5>
+        </div>
+
+        <div class="col-md-4">
+            <h4>Account B</h4>
+            <h5>Address: {{ demoAccounts[1].address }}</h5>
+            <h5>Balance: {{ demoAccounts[1].balance }}</h5>
+        </div>
+        
+        <div class="col-md-4">
+            <h4>Account C</h4>
+            <h5>Address: {{ demoAccounts[2].address }}</h5>
+            <h5>Balance: {{ demoAccounts[2].balance }}</h5>
+        </div>
+
+    </div>
+
+    <div>
+
+        <h1>Deposit</h1>
+        <form>
+            <div class="form-group">
+                <label for="addressFrom.demo">Select Demo Account:</label>
+                <select ng-model="addressFrom.demo" id="addressFrom">
+                    <option ng-repeat="account in demoAccounts">{{ account.name }}</option>
+                </select>
+            </div>                  
+            
+            <div class="form-group">
+                <label for="pwd">Or Input Address:</label>
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="accountToUser" 
+                    ng-model="addressFrom.user">
+            </div>
+
+            <button 
+                class="btn btn-default" 
+                ng-click="depositFunds(.05)">5¢</button>
+            <button 
+                class="btn btn-default"
+                ng-click="depositFunds(.10)">10¢</button>
+            <button 
+                class="btn btn-default"
+                ng-click="depositFunds(.25)">25¢</button>
+        </form>
+
+        <div ng-show="transfer_success">
+            <div class="alert alert-success" role="alert">Sending was a success</div>
+        </div>
+        <div ng-show="!transfer_success">
+            <div class="alert alert-error" role="alert">{{ transfer_error }}</div>
+        </div>
+    
+    </div>
+
+    <div>
+
+        <h1>Withdraw</h1>
+        <form>
+            <div class="form-group">
+                <label for="addressTo.demo">Select Demo Account:</label>
+                <select ng-model="addressTo.demo" id="addressFrom">
+                    <option ng-repeat="account in demoAccounts">{{ account.name }}</option>
+                </select>
+            </div>                  
+            
+            <div class="form-group">
+                <label for="pwd">Or Input Address:</label>
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="accountToUser" 
+                    ng-model="addressTo.user">
+            </div>
+
+            <button 
+                class="btn btn-default" 
+                ng-click="withdrawFunds(.05)">5¢</button>
+            <button 
+                class="btn btn-default"
+                ng-click="withdrawFunds(.10)">10¢</button>
+            <button 
+                class="btn btn-default"
+                ng-click="withdrawFunds(.25)">25¢</button>
+        </form>
+
+        <div ng-show="transfer_success">
+            <div class="alert alert-success" role="alert">Withdrawal was a success</div>
+            <div>New Balance: {{ newBalance }}</div>
+        </div>
+        <div ng-show="transfer_error" clsss="alert alert-warning">
+            <div>Withdrawal Failed</div>
+            <div class="alert alert-error" role="alert">{{ transfer_error }}</div>
+        </div>
+    
+    </div>
+
+
+</div>
