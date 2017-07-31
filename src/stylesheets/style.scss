@@ -1,0 +1,335 @@
+$secondary: #919191;
+$green: #4CAF50;
+$red: #F44336;
+$blue: #0667d0;
+$slategrey: #708090;
+$primary: #0667d0;
+// $primary: #708090;
+
+
+
+
+
+html, body {
+    // background-color: #eee;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 300;
+    color: black;
+    width: 100%;
+    min-height: 100%;
+}
+
+* {
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+}
+
+
+
+
+body {
+    padding-top: 80px;
+}
+
+canvas {
+    // position: fixed;
+    background-color: $primary;
+    // z-index: -100;
+    // top: 0;
+}
+
+nav.navbar {
+    border-radius: 0px;
+    background-color: white;
+
+    a.navbar-brand {
+        color: black;
+
+        &:hover {
+            color: $primary;
+        }
+    }
+
+    .navbar-nav {
+        a {
+            color: black;
+            &:hover {
+                color: $primary;
+            }
+        }
+    }
+}
+
+
+.panel-default {
+    .panel-heading {
+        height: 54px;
+        font-size: 18px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding-left: 30px;
+        text-align: left;
+        background-color: white;
+        color: $primary;
+    }
+}
+
+.transfer-forms {
+
+    .panel {
+        background-color: white;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        border: 1px solid #DAE1E9;
+
+        .panel-body {
+            padding: 40px 30px;
+
+            label {
+                font-size: 13px;
+            }
+            
+            input {
+                height: 48px;
+                border-radius: 0px;
+                box-shadow: none;
+            }
+
+            .divider {
+                text-align: center;
+            }
+
+            select {
+                width: 100%;
+                height: 48px;
+                border-radius: 0;
+                background-color: white;
+                -webkit-appearance: none;
+                padding-left: 15px;
+            }
+
+            .btn.btn-default {
+                height: 48px;
+                border-radius: 0px;
+            }
+
+            .alert-wrapper {
+                margin-top: 25px;
+
+                .alert {
+                    border-radius: 0px;
+                    margin-bottom: 0px;
+                }
+            }
+        }    
+    }
+}
+
+.summary {
+    // padding: 30px;
+    text-align: center;
+    
+    .header {
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 5px;
+    }
+
+    .eth {
+        font-size: 22px;
+        font-weight: 300;
+    }
+
+    
+    .usd {
+        color: $secondary;
+        margin-top: 3px;
+    }
+
+    .panel-body {
+        padding: 25px 0px;
+    }
+}
+
+
+#transfer-table.table {
+    table-layout: fixed;
+
+    tr.transfer {
+        height: 80px;
+
+        .usd {
+            color: $secondary;
+            font-size: 12px;
+        }
+
+        .eth {
+            font-size: 16px;
+
+            &.negative {
+                color: $red;
+            }
+            &.positive {
+                color: $green;
+            }
+        }
+        
+        .date {
+            font-size: 18px;
+        }
+
+        .sign {
+            margin-right: 2px;
+        }
+
+        
+
+        td {
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            vertical-align: middle;
+        }
+    }
+
+    th {    
+        text-align: center;
+        .block {
+            width: 60px;
+        }
+    }
+
+    
+
+    th.block {
+        width: 70px;
+    }
+}
+
+.demos {
+    .panel-body {
+        padding-bottom: 25px;
+    }
+
+    .message {
+        margin: 20px 0px 30px 0px;
+    }
+
+    hr {
+        border-style: dashed;
+    }
+
+    .demo {
+        text-align: center;
+        border-right: 1px solid #e2e2e2;
+        margin: 20px 0px;
+
+        
+
+        .name {
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+
+        label {
+            // font-weight: 500;
+            font-size: 12px;
+            position: relative;
+            top: -3px;
+        }
+
+        .address, .value {
+            // font-weight: 500;
+        }
+
+        .value {
+            font-size: 18px;
+        }
+
+        &:last-child {
+            border: none;
+        }
+    }
+}
+
+
+// ================================================= //
+// Footer
+// ================================================= //
+
+
+footer {
+	position: absolute;
+    // bottom: 0px;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.7);
+    /*height: 50px;*/
+    align-items: center;
+    line-height: 70px;
+    background-color: transparent;
+    margin-top: 40px;
+
+	@media (max-width: 350px) {	 
+		font-size: 11px;
+	}
+    
+    p {
+    	margin: 0px;
+    	margin: 0px;
+    	height: 70px;
+    	color: white;
+    	text-align: center;
+
+		&.name {
+			height: auto;
+		}
+
+    	a.name {
+    		display: inline;
+    		/*margin-left: 5px;*/
+    	}
+    }
+
+    a {
+    	margin: 0 auto;
+	    width: 100%;
+	    text-align: center;
+	    display: inline-block;
+        font-weight: 700;
+        color: white;
+
+    	&:hover {
+            // color: $primary;
+            color: white;
+    		text-decoration: underline;
+    	}
+    	&:focus {
+            color: white;
+    		// color: $primary;
+    		/*text-decoration: underline;*/
+    	}
+    }
+}
+
+
+// Particle Background Plugin
+#particles {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  z-index: -100;
+}
+
+#intro {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  padding: 0 20px;
+  width: 100%;
+  text-align: center;
+  display: none;
+}

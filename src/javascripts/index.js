@@ -16,11 +16,16 @@ SimpleWallet.setProvider(web3.currentProvider);
 
 
 // Import the page's CSS. Webpack will know what to do with it.
-import "../stylesheets/style.css";
+import "../stylesheets/style.scss";
+
 
 // import jQuery from "../../node_modules/jquery/dist/jquery.js";
 // Import jQuery
-window.jQuery = require("../../node_modules/jquery/dist/jquery.js");
+window.jQuery = window.$ = require("../../node_modules/jquery/dist/jquery.js");
+
+// Import particle background
+import './particleground.js'
+import './particles.js'
 
 // console.log(jQuery);
 

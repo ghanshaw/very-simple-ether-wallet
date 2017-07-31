@@ -1,66 +1,68 @@
-<div class="balance">
-Balance: {{ balance }} - BalanceInEther: {{ balanceInEther }}
-</div>
+<div class="container">
 
-<div class="deposit">
-    <h1>Deposits</h1>
-
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Time</th>
-                <th>Hash</th>
-                <th>Block</th>
-                <th>From</th>
-                <th>Amount</th>
-                <th>Gas</th>   
-            </tr>
-        </thead>
-        <tbody>
-        <tr ng-repeat="deposit in depositList">
-            <td>{{ deposit.time }}</td>
-            <td>{{ deposit.transactionHash }}</td>
-            <td>{{ deposit.blockNumber }}</td>
-            <td>{{ deposit.args._sender }}</td>
-            <td>{{ deposit.ether }}</td>
-            <td>{{ Gas }}</td>            
-        </tr>
-        </tbody>
-    </table>
-
-    <div ng-repeat="deposit in depositList">
-        <div>{{ deposit }}</div>
-        <div>Amount: {{ deposit.args.ether }}</div>
-        <div>Trasaction: {{ deposit.transactionHash }}</div>
+    <div class="row summary panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Summary</h3>
+        </div>
+        <div class="panel-body">
+            <div class="col-md-4">
+                <div class="header">Available Balance</div>
+                <div class="eth">{{ balance.ether | number : 6 }} ETH</div>
+                <div class="usd"> $ {{ balance.usd | number : 2 }}</div>
+            </div>
+            <div class="col-md-4">
+                <div class="header">Deposits</div>
+                <div class="eth">{{ deposits.ether | number : 6 }} ETH</div>
+                <div class="usd"> $ {{ deposits.usd | number : 2 }}</div>
+            </div>
+            <div class="col-md-4">
+                <div class="header">Withdrawals</div>
+                <div class="eth">{{ withdrawals.ether | number : 6 }} ETH</div>
+                <div class="usd"> $ {{ withdrawals.usd | number : 2 }}</div>
+            </div>
+        </div>
     </div>
-</div>
 
-
-<div class="withdrawal">
-<h1>Withdrawals</h1>
-
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Time</th>
-            <th>Hash</th>
-            <th>Block</th>
-            <th>From</th>
-            <th>Amount</th>
-            <th>Gas</th>   
-        </tr>
-    </thead>
-    <tbody>
-    <tr ng-repeat="withdrawal in withdrawalList">
-        <td>{{ withdrawal.time }}</td>
-        <td>{{ withdrawal.transactionHash }}</td>
-        <td>{{ withdrawal.blockNumber }}</td>
-        <td>{{ withdrawal.args.recipient }}</td>
-        <td>{{ withdrawal.args.amount.toNumber() }}</td>
-        <td>{{ Gas }}</td>            
-    </tr>
-    </tbody>
-</table>
-
+    <div class="row transfers panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Transactions</h3>
+        </div>
+        <div class="panel-body">
+        
+            <div class="col-md-12">
+                <table class="table" id="transfer-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Hash</th>
+                            <th class="block">Block</th>
+                            <th class="to-from">To/From</th>
+                            <th>Amount</th>
+                            <th>Gas</th>   
+                        </tr>
+                    </thead>
+                    <tbody>
+                     <tr class="transfer" ng-repeat=" trans in transferList | orderBy:'-time' "> 
+                    <!-- <tr ng-repeat=" trans in transferList "> -->
+                        <td>
+                            <div class="date">{{ trans.time | date:'MMM d, y' }}</div>
+                            <div class="time">{{ trans.time | date:'h:mm a' }}</div>
+                        </td>
+                        <td>{{ trans.transactionHash }}</td>
+                        <td>{{ trans.blockNumber }}</td>
+                        <td>{{ trans.args._sender }}</td>
+                        <td class="value">
+                            <div class="eth" ng-class="getSignCSS(trans.sign)"><span class="sign">{{ trans.sign }}</span>{{ trans.value.ether | number : 6 }} ETH</div>
+                            <div class="usd"><span class="sign">{{ trans.sign }}</span>${{ trans.value.usd | number : 2 }} USD</div>
+                        </td>
+                        <td class="gas">
+                            <div class="">{{ trans.gas.used }}</div>
+                            <div class="usd">${{ trans.gas.usd | number : 8 }}</div>
+                        </td>            
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>

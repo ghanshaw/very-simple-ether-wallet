@@ -24,7 +24,7 @@ contract DemoAccount {
         owner.transfer(amount);
     }
     
-    function getBalance() returns(uint) {
+    function getBalance() returns (uint) {
         return this.balance;
     }
 

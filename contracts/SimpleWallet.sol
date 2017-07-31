@@ -6,6 +6,8 @@ contract SimpleWallet {
 
     DemoAccount[] demoList;
     uint demoCount;
+    // uint deposits;
+    // uint withdrawals;
     mapping (address => bool) demoSet;
 
     event DepositEvent(address _sender, uint amount);
@@ -13,6 +15,9 @@ contract SimpleWallet {
 
     // Function constructor
     function SimpleWallet() {
+
+        // deposits = 0;
+        // withdrawals = 0;
         
         // Limit number of demo accounts
         demoCount = 3;
@@ -31,12 +36,16 @@ contract SimpleWallet {
 
     // Fallback function: involked when contract is called with a value, but without a function
     function() payable {
-        if (demoSet[msg.sender] == true) {
-            DepositEvent(msg.sender, msg.value);
-        }
+        // deposits += msg.value;
+        DepositEvent(msg.sender, msg.value);
+        // updateBalance(msg.value);
     }
 
-    //  Transfer mfunds from demo account at index to wallet
+    // function updateBalance(uint amount) {
+    //     deposits += amount;
+    // }
+
+    //  Transfer funds from demo account at index to wallet
     function transferFromDemo(uint amount, uint index) {
         demoList[index].transferToWallet(amount);
     }
@@ -59,14 +68,18 @@ contract SimpleWallet {
             recipient.transfer(amount);
 
             // Emit event
+            // withdrawals += amount;
             WithdrawalEvent(msg.sender, amount, recipient);
-            return this.balance;
         }
     }
-    
-    function getBalance() constant returns (uint) {
-        return this.balance;
-    }
+
+    // function getDepositsTotal() constant returns (uint) {
+    //     return deposits;
+    // }
+
+    // function getWithdrawalsTotal() constant returns (uint) {
+    //     return withdrawals;
+    // }
 
     function killWallet() {
         suicide(msg.sender);
