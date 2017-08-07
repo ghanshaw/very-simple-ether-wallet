@@ -4,20 +4,22 @@ import "./DemoAccount.sol";
 
 contract SimpleWallet {
 
-    DemoAccount[] demoList;
-    uint demoCount;
-    // uint deposits;
-    // uint withdrawals;
-    mapping (address => bool) demoSet;
+    // Contract creator
+    address owner;
 
-    event DepositEvent(address _sender, uint amount);
+    // Number of demo accounts
+    uint demoCount;
+
+    // List of demo accounts
+    DemoAccount[] demoList;
+
+    // Events fire whenever deposit or withdrawal is made
+    event DepositEvent(address _sender, uint amount, address recipient);
     event WithdrawalEvent(address _sender, uint amount, address recipient);
 
     // Function constructor
     function SimpleWallet() {
-
-        // deposits = 0;
-        // withdrawals = 0;
+        owner = msg.sender;
         
         // Limit number of demo accounts
         demoCount = 3;
@@ -26,35 +28,31 @@ contract SimpleWallet {
         for (uint i = 0; i < demoCount; i++) {
             DemoAccount demo = createDemoAccount();
             demoList.push(demo);
-            demoSet[address(demo)] = true;
         }
     }
     
+    // Create new demo account
     function createDemoAccount() returns (DemoAccount) {
         return new DemoAccount();
     }
 
     // Fallback function: involked when contract is called with a value, but without a function
     function() payable {
-        // deposits += msg.value;
-        DepositEvent(msg.sender, msg.value);
-        // updateBalance(msg.value);
+        DepositEvent(msg.sender, msg.value, this);
     }
-
-    // function updateBalance(uint amount) {
-    //     deposits += amount;
-    // }
 
     //  Transfer funds from demo account at index to wallet
     function transferFromDemo(uint amount, uint index) {
         demoList[index].transferToWallet(amount);
     }
     
+    // Get balance of demo account using index
     function getDemoAccountBalance(uint index) constant returns (uint) {
         DemoAccount demo = demoList[index];
         return demo.getBalance();
     }
     
+    // Get address of demo account using index
     function getDemoAccountAddress(uint index) constant returns (address) {
         DemoAccount demo = demoList[index];
         return address(demo);
@@ -68,20 +66,13 @@ contract SimpleWallet {
             recipient.transfer(amount);
 
             // Emit event
-            // withdrawals += amount;
             WithdrawalEvent(msg.sender, amount, recipient);
         }
     }
 
-    // function getDepositsTotal() constant returns (uint) {
-    //     return deposits;
-    // }
-
-    // function getWithdrawalsTotal() constant returns (uint) {
-    //     return withdrawals;
-    // }
-
     function killWallet() {
-        suicide(msg.sender);
+        if(msg.sender == owner) {
+            suicide(owner);
+        }
     }
 }

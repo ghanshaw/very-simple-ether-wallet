@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="55 21 180 58" style="enable-background:new 55 21 180 58;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#DCE4EB;}
+	.st1{fill:#2B8FDE;}
+	.st2{fill:#7B7E7F;}
+	.st3{fill:#D3D3D3;}
+</style>
+<circle class="st0" cx="218" cy="50" r="5">
+<animate  fill="remove" attributeName="r" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" calcMode="spline" dur="2.1s" values="10;0;0;0;0" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" additive="replace" restart="always" begin="0s" accumulate="none">
+	</animate>
+<animate  fill="remove" attributeName="cx" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" calcMode="spline" dur="2.1s" values="84;84;84;84;84" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" additive="replace" restart="always" begin="0s" accumulate="none">
+	</animate>
+</circle>
+<circle class="st1" cx="201.1" cy="50" r="20">
+<animate  fill="remove" attributeName="r" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" calcMode="spline" dur="2.1s" values="0;10;10;10;0" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" additive="replace" restart="always" begin="-1.05s" accumulate="none">
+	</animate>
+<animate  fill="remove" attributeName="cx" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" calcMode="spline" dur="2.1s" values="16;16;50;84;84" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" additive="replace" restart="always" begin="-1.05s" accumulate="none">
+	</animate>
+</circle>
+<circle class="st2" cx="133.1" cy="50" r="20">
+<animate  fill="remove" attributeName="r" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" calcMode="spline" dur="2.1s" values="0;10;10;10;0" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" additive="replace" restart="always" begin="-0.525s" accumulate="none">
+	</animate>
+<animate  fill="remove" attributeName="cx" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" calcMode="spline" dur="2.1s" values="16;16;50;84;84" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" additive="replace" restart="always" begin="-0.525s" accumulate="none">
+	</animate>
+</circle>
+<circle class="st3" cx="82" cy="50" r="15">
+<animate  fill="remove" attributeName="r" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" calcMode="spline" dur="2.1s" values="0;10;10;10;0" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" additive="replace" restart="always" begin="0s" accumulate="none">
+	</animate>
+<animate  fill="remove" attributeName="cx" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" calcMode="spline" dur="2.1s" values="16;16;50;84;84" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" additive="replace" restart="always" begin="0s" accumulate="none">
+	</animate>
+</circle>
+<circle class="st0" cx="82" cy="50" r="0">
+<animate  fill="remove" attributeName="r" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" calcMode="spline" dur="2.1s" values="0;0;10;10;10" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" additive="replace" restart="always" begin="0s" accumulate="none">
+	</animate>
+<animate  fill="remove" attributeName="cx" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" calcMode="spline" dur="2.1s" values="16;16;16;50;84" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" additive="replace" restart="always" begin="0s" accumulate="none">
+	</animate>
+</circle>
+</svg>

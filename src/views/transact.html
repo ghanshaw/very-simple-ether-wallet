@@ -11,24 +11,42 @@
                 <div class="panel-body">
 
                     <div class="col-md-12">
-                        <p class="message">This wallet features three demonstration accounts. 
+                        <div class="message">
+                            <p class="bold">How to Use</p>
+                            <p>
+                            To use this app, you must have access to the Ethereum blockchain. You can access by 
+                            blockchain by downloading Geth and downloading or by downloading MetaMask. You do not need ether--
+                            the demo accounts have ether for that purpose--but you will need to sign each transaction with 
+                            your own Ethereum account.
+                            </p>
+                            
+                            <p class="bold">Depositing/Withdrawing Ether</p>
+                            <p>
+                            This wallet features three demonstration accounts. 
                             Feel free to use these accounts to move funds in and out of the wallet. 
                             You can also send funds directly to this wallet if you wish. 
-                            You can move small amounts of ether between real accounts. 
                             Switch to the homepage to track the wallet balance and the transactions as they occur.
-                        </p>
-                    <hr>
-                    </div>
 
+                            In order to move funds into the Simple Wallet, users must approve the movement of ether. Therefore, the Deposit
+                            for does not allow users to deposit funds from arbitrary ether addresses, only from demo addresses. However, users can withdrawal
+                            funds into any abtrary account.
+
+                            Users are permitted to Deposit (move funds into the Simple Wallet) 
+                            from any demo account and Withdraw (move funds out of Simple Wallet) into either a
+                            demo account or any other Ethereum address.
+                            </p>    
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <hr>
+                    </div>
                     <div class="col-md-4 demo" ng-repeat=" demo in demoAccounts ">
                         <div class="name">{{ demo.name }}</div>
                         <div class="address">{{ demo.address }}</div>
                         <label>Address</label>
                         <div class="value">{{ demo.ether | number : 6 }} ETH  · ${{ demo.usd | number : 2 }} USD</div>
                         <label>Balance</label>
-                        
                     </div>
-
                 </div>
             </div>
         </div>
@@ -54,17 +72,6 @@
                                 ng-options="account.name for account in demoAccounts">
                             </select>
                         </div>           
-                        
-                        
-                        <div class="form-group">
-                            <label for="pwd">Input Address</label>
-                            <input 
-                                type="text" 
-                                class="form-control" 
-                                id="accountFromUser" 
-                                ng-model="addressFrom.user"
-                                placeholder="0x646a...">
-                        </div>
 
                         <label for="pwd">Amount</label>
                         <div class="btn-group btn-group-justified" role="group" aria-label="...">
@@ -80,8 +87,12 @@
                         </div>
                     </form>
 
+                    <div class="row processing-wrapper" ng-show="transfer.deposit.processing">
+                        <div class="processing">Processing request. Please wait<span>.</span><span>.</span><span>.</span></div>
+                    </div>
                     <div class="row alert-wrapper" ng-show="transfer.deposit.message">
                         <div class="col-md-12">
+                            
                             <div 
                                 class="alert" 
                                 role="alert"
@@ -137,6 +148,9 @@
                         </div>
                     </form>
 
+                    <div class="row processing-wrapper" ng-show="transfer.withdrawal.processing">
+                        <div class="processing">Processing request. Please wait<span>.</span><span>.</span><span>.</span></div>
+                    </div>
                     <div class="row alert-wrapper" ng-show="transfer.withdrawal.message">
                         <div class="col-md-12">
                             <div 

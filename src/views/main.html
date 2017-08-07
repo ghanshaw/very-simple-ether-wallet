@@ -2,8 +2,9 @@
 
     <div class="row summary panel panel-default">
         <div class="panel-heading">
-            <h3 class="panel-title">Summary</h3>
+            <h3 class="panel-title">Summary <span class="address">({{ contract.address }})</span></h3>
         </div>
+
         <div class="panel-body">
             <div class="col-md-4">
                 <div class="header">Available Balance</div>
@@ -33,7 +34,8 @@
                 <table class="table" id="transfer-table">
                     <thead>
                         <tr>
-                            <th>Time</th>
+                            <th class="number">#</th>
+                            <th class="time">Time</th>
                             <th>Hash</th>
                             <th class="block">Block</th>
                             <th class="to-from">To/From</th>
@@ -42,15 +44,58 @@
                         </tr>
                     </thead>
                     <tbody>
-                     <tr class="transfer" ng-repeat=" trans in transferList | orderBy:'-time' "> 
+                        <!-- Ng-Repeat for Pending transactions -->
+                        <tr class="pending" ng-repeat=" pending in pendingList | orderBy:'-time' track by $index "> 
+                    
+                        <td class="icon"><img inline src="../src/images/ellipsis.svg" /> </td>
+                        <td>
+                            <div class="date">{{ pending.time | date:'MMM d, y' }}</div>
+                            <div class="time">{{ pending.time | date:'h:mm a' }}</div>
+                        </td>
+                        <td>
+                            <a 
+                                target='_blank' 
+                                href="{{ getTransactionUrl(pending.transactionHash) }}">{{ pending.transactionHash }} 
+                            </a>
+                        </td>
+                        <td class="block">(pending)</td>
+                        <td>
+                            <a 
+                                target="_blank"
+                                href="{{ getAddressUrl(pending.to_from) }}">{{ pending.to_from }}
+                            </a>
+                        </td>
+                        <td class="value">
+                            <div class="eth" ng-class="getSignCSS(trans.sign)"><span class="sign">{{ pending.sign }}</span>{{ pending.value.ether | number : 6 }} ETH</div>
+                            <div class="usd"><span class="sign">{{ trans.sign }}</span>${{ pending.value.usd | number : 2 }} USD</div>
+                        </td>
+                        <td class="gas">(pending)</td>            
+                    </tr>
+                     
+                    <!-- Ng-Repeat for Transfers (mined transactions) -->
+                    <tr class="transfer" ng-repeat=" trans in transferList | orderBy:'-time' track by $index"> 
                     <!-- <tr ng-repeat=" trans in transferList "> -->
+                        <td class="number">{{ transferList.length - $index }}</td>
                         <td>
                             <div class="date">{{ trans.time | date:'MMM d, y' }}</div>
                             <div class="time">{{ trans.time | date:'h:mm a' }}</div>
                         </td>
-                        <td>{{ trans.transactionHash }}</td>
-                        <td>{{ trans.blockNumber }}</td>
-                        <td>{{ trans.args._sender }}</td>
+                        <td>
+                            <a 
+                                target='_blank' 
+                                href="{{ getTransactionUrl(trans.transactionHash) }}">{{ trans.transactionHash }} 
+                            </a>
+                        </td>
+                        <td><a 
+                                target="_blank"
+                                href="{{ getBlockUrl(trans.blockNumber) }}"> {{ trans.blockNumber }} 
+                            </a>
+                        <td>
+                            <a 
+                                target="_blank"
+                                href="{{ getAddressUrl(trans.to_from) }}">{{ trans.to_from }}
+                            </a>
+                        </td>
                         <td class="value">
                             <div class="eth" ng-class="getSignCSS(trans.sign)"><span class="sign">{{ trans.sign }}</span>{{ trans.value.ether | number : 6 }} ETH</div>
                             <div class="usd"><span class="sign">{{ trans.sign }}</span>${{ trans.value.usd | number : 2 }} USD</div>

@@ -1,5 +1,9 @@
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const HtmlWebpackInlineSVGPlugin = require('html-webpack-inline-svg-plugin');
+
+
 
 module.exports = {
   entry: './src/javascripts/index.js',
@@ -8,19 +12,25 @@ module.exports = {
     filename: 'bundle.js'
   },
   plugins: [
-    // Copy our app's index.html to the build folder.
+    // Copy our app's html files to the build folder.
     new CopyWebpackPlugin([
       { from: 'src/index.html', to: "index.html" },
       { from: 'src/views/main.html', to: "views/main.html" },
       { from: 'src/views/about.html', to: "views/about.html" },
       { from: 'src/views/transact.html', to: "views/transact.html" }
-    ])
+    ]),
+    // new HtmlWebpackPlugin(),
+    // new HtmlWebpackInlineSVGPlugin()
   ],
   module: {
     rules: [
       {
        test: /\.css$/,
        use: [ 'style-loader', 'css-loader' ]
+      },
+      {
+          test: /\.svg$/,
+          loader: 'svg-inline-loader?classPrefix'
       },
       {
         test: /\.scss$/,
