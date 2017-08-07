@@ -29,6 +29,20 @@ app.service('simplewallet', function($rootScope, $http) {
         usd: 0
     }
 
+    // Status updates for deposit/withdrawal forms
+    self.transfer = {
+        deposit: {
+            error: false,
+            success: false,
+            message: ''
+        },
+        withdrawal: {
+            error: false,
+            success: false,
+            message: ''
+        },
+    }
+
     // Object store contract address
     self.address = {};
 
@@ -85,6 +99,7 @@ app.service('simplewallet', function($rootScope, $http) {
         result.value = {}
         result.gas = {}
 
+        
         var transaction;
 
         // $scope.transferList.push(result);
@@ -117,7 +132,9 @@ app.service('simplewallet', function($rootScope, $http) {
             if (result.event == 'DepositEvent') {
                 result.sign = '+';
                 result.to_from = result.args._sender;
+                self.transfer.deposit.processing = false;
             } else if (result.event == 'WithdrawalEvent') {
+                self.transfer.withdrawal.processing = false;
                 result.to_from = result.args.recipient;
                 result.sign = '—';
             }
@@ -320,8 +337,8 @@ app.controller("mainController", function($scope, simplewallet) {
     // When an event is triggered
     $scope.$watch('transferMap', function() {
         console.log('updating table');
-        updatePendingList();
         updateTransferList();
+        updatePendingList();
     }, true);
 
     function updateTransferList() {
@@ -332,13 +349,27 @@ app.controller("mainController", function($scope, simplewallet) {
 
             // If this transaction is in the pending map, remove it
             if ($scope.pendingMap.hasOwnProperty(hash)) {
-                // delete pendingMap[hash];
+                delete $scope.pendingMap[hash];
             }
         }
     }
 
     function updatePendingList() {
         $scope.pendingList = [];
+        // $scope.pendingList.push({
+        //     sign : "+",
+        //     status: "pending",
+        //     time : 1502086911299,
+        //     to_from: "0x1c942838e6e078269afb818eff33d5d91abd3a27",
+        //     transactionHash: "0x23401edde6d52d70a419f13671b817928fa972192edac557126eacdfce60acdc",
+        //     type: "deposit",
+        //     value: {
+        //         ether: 0.000190381906103643,
+        //         usd: 0.04999999999999976,
+        //         wei: 1,
+        //     },
+        // })
+        
         for (hash in $scope.pendingMap) {
             let pending = $scope.pendingMap[hash];
             // convertToEthUsd(pending.value);
@@ -398,26 +429,32 @@ app.controller('indexController', function($scope, simplewallet) {
     $scope.loading = simplewallet.loading;
     $scope.warning = false;
 
+    simplewallet.loaded.then(function() {
+        $scope.currency = simplewallet.currency;
+    });
+
     $scope.hideLoadingScreen = function () {
         console.log($scope.warning);
+        console.log($scope.loading)
         return !$scope.warning && !simplewallet.loading;
     }
 
-    window.addEventListener('load', function() {
-        // Checking if Web3 has been injected by the browser (Mist/MetaMask)
-        if (typeof web3 !== 'undefined') {
-            console.info("Using web3 detected from external source.")
-            $scope.warning = false;
-            // Use Mist/MetaMask's provider
-            window.web3 = new Web3(web3.currentProvider);
-        } else {
-            $scope.warning = true;
-            console.warn("No web3 detected. Please consider using Ethereum browser Mist or MetaMask");
-        }
+    // Checking if Web3 has been injected by the browser (Mist/MetaMask)
+    if (typeof web3 !== 'undefined') {
+        console.info("Using web3 detected from external source.")
+        $scope.warning = false;
+        // Use Mist/MetaMask's provider
+        window.web3 = new Web3(web3.currentProvider);
+    } else {
+        $scope.warning = true;
+        console.warn("No web3 detected. Please consider using Ethereum browser Mist or MetaMask");
+    }
 
+        // $scope.$apply();
 
-        $scope.$apply();
-    });
+    // window.addEventListener('load', function() {
+        
+    // });
 
     $scope.reload = function() {
         window.location.reload();
@@ -560,18 +597,7 @@ app.controller("transactController", function($scope, simplewallet) {
 
     // }
 
-    $scope.transfer = {
-        deposit: {
-            error: false,
-            success: false,
-            message: ''
-        },
-        withdrawal: {
-            error: false,
-            success: false,
-            message: ''
-        },
-    }
+    $scope.transfer = simplewallet.transfer;
 
     function depositFromDemo(amount, index, address) {
 
@@ -591,7 +617,7 @@ app.controller("transactController", function($scope, simplewallet) {
         //     return;
         // };
 
-        contract.transferFromDemo(amount, index, {
+        var res = contract.transferFromDemo(amount, index, {
                 // Sign transaction with first available account
                 from: web3.eth.accounts[0],
             }).then(function(res) {
@@ -613,6 +639,7 @@ app.controller("transactController", function($scope, simplewallet) {
                     sign: '+'
                 }
 
+            console.log('HOT LIKE FIRE - DEPOSIT');
             $scope.transfer.deposit.processing = false;
             $scope.transfer.deposit.success = true;
             $scope.transfer.deposit.message = "Deposit initiated. Please check Account page for status.";
@@ -626,6 +653,8 @@ app.controller("transactController", function($scope, simplewallet) {
             console.error(error.stack);
             $scope.$apply();
         })
+
+        console.log(res);
 
     }
 
@@ -678,12 +707,13 @@ app.controller("transactController", function($scope, simplewallet) {
                     sign: '-'
                 }
 
+                console.log('HOT LIKE FIRE - WITHDRAWAL');
                 $scope.transfer.withdrawal.processing = false;
                 $scope.transfer.withdrawal.success = true;
                 $scope.transfer.withdrawal.message = "Withdrawal initiated. Please check Account page for status.";
                 $scope.$apply();
 
-            }, function failutre(error) {
+            }, function failure(error) {
 
                 $scope.transfer.withdrawal.processing = false;
                 $scope.transfer.withdrawal.success = false;

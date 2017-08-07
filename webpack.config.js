@@ -1,8 +1,8 @@
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const HtmlWebpackInlineSVGPlugin = require('html-webpack-inline-svg-plugin');
-
+const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
+// const HtmlWebpackInlineSVGPlugin = require('html-webpack-inline-svg-plugin');
 
 
 module.exports = {
@@ -12,15 +12,30 @@ module.exports = {
     filename: 'bundle.js'
   },
   plugins: [
+    // new HtmlWebpackPlugin({
+    //   filename: 'views/main.html',
+    //   template: 'src/views/main.ejs'
+    // }),
+      new FaviconsWebpackPlugin({
+         // Your source logo
+        logo: './src/images/logo.png',
+        emitStats: true,
+        inject: true,
+      }),
+      new HtmlWebpackPlugin({
+      filename: 'index.html',
+      template: 'src/index.html',
+      inject: 'head'
+    }),
     // Copy our app's html files to the build folder.
     new CopyWebpackPlugin([
-      { from: 'src/index.html', to: "index.html" },
+      // { from: 'src/index.html', to: "index.html" },
       { from: 'src/views/main.html', to: "views/main.html" },
       { from: 'src/views/about.html', to: "views/about.html" },
       { from: 'src/views/transact.html', to: "views/transact.html" }
     ]),
-    // new HtmlWebpackPlugin(),
-    // new HtmlWebpackInlineSVGPlugin()
+    
+    
   ],
   module: {
     rules: [
@@ -30,17 +45,17 @@ module.exports = {
       },
       {
           test: /\.svg$/,
-          loader: 'svg-inline-loader?classPrefix'
+          loader: 'raw-loader'
       },
       {
         test: /\.scss$/,
         use: [{
             loader: "style-loader" // creates style nodes from JS strings
-        }, { 
-            loader: "css-loader" // translates CSS into CommonJS
-        },  {
-            loader: "sass-loader" // compiles Sass to CSS
-        }]
+          }, { 
+              loader: "css-loader" // translates CSS into CommonJS
+          },  {
+              loader: "sass-loader" // compiles Sass to CSS
+          }]
         }
     ],
     loaders: [

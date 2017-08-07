@@ -9,16 +9,28 @@
 
                         <div class="col-md-12">
                             <p class="message">
-                                The Very Simple Wallet is a distributed app and smart contract created to demonstrate the basics of working with the Ethereum blockchain.
+                                The Very Simple Ether Wallet is a distributed app and smart contract created to demonstrate
+                                the basics of working with the Ethereum blockchain.
                                 The wallet allows users to move funds between the account attached to the contract, and three demo
-                                accounts. I built this project in Solidity, using the Truffle framework. I also use Webpack to 
-                                combine modules and Yarn to manage dependencies.         
+                                accounts. I built this project in Solidity, using the Truffle framework. I used AngularJS for the frontend. I also use Webpack to 
+                                combine modules, Mocha (built into Truffle) to test my contracts and Yarn to manage dependencies.         
                             </p>
 
                             <p>
                                 The project consists of two smart contracts. The first contract was written to manage the
                                 wallet. Another contract was created for generate and manage the demo accounts. 
                             </p>
+
+                            <p>When you desposit or withdraw from the account, the transaction is first be sent to the 
+                            contract. When that process is complete, the transaction appears on the homepage as <i>pending</i>.
+                            When the transaction has been mined and funds have successfully been moved, a Deposit or Withdrawal event fires and the 
+                            finalized record appears on the homepage.</p>
+
+                            <p>In order to move funds into the Simple Wallet, users must approve the movement of ether. Therefore, the Deposit
+                            form does not allow users to deposit funds from arbitrary ether addresses, only from demo addresses. However, users can withdraw
+                            funds into any abtrary account.</p>
+
+                            
                         </div>
 
 

@@ -6,17 +6,17 @@
         </div>
 
         <div class="panel-body">
-            <div class="col-md-4">
+            <div class="col-md-4 snapshot">
                 <div class="header">Available Balance</div>
                 <div class="eth">{{ balance.ether | number : 6 }} ETH</div>
                 <div class="usd"> $ {{ balance.usd | number : 2 }}</div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 snapshot">
                 <div class="header">Deposits</div>
                 <div class="eth">{{ deposits.ether | number : 6 }} ETH</div>
                 <div class="usd"> $ {{ deposits.usd | number : 2 }}</div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 snapshot">
                 <div class="header">Withdrawals</div>
                 <div class="eth">{{ withdrawals.ether | number : 6 }} ETH</div>
                 <div class="usd"> $ {{ withdrawals.usd | number : 2 }}</div>
@@ -34,20 +34,42 @@
                 <table class="table" id="transfer-table">
                     <thead>
                         <tr>
-                            <th class="number">#</th>
+                            <th class="number hidden-xs">#</th>
                             <th class="time">Time</th>
                             <th>Hash</th>
-                            <th class="block">Block</th>
+                            <th class="block hidden-xs">Block</th>
                             <th class="to-from">To/From</th>
                             <th>Amount</th>
-                            <th>Gas</th>   
-                        </tr>
+                            <th class="gas hidden-xs">Gas</th>   
+                        </tr> 
                     </thead>
                     <tbody>
                         <!-- Ng-Repeat for Pending transactions -->
                         <tr class="pending" ng-repeat=" pending in pendingList | orderBy:'-time' track by $index "> 
-                    
-                        <td class="icon"><img inline src="../src/images/ellipsis.svg" /> </td>
+                     
+                          <td class="icon hidden-xs"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" class="lds-ellipsis" style="background: none;">
+                            <!--circle(cx="16",cy="50",r="10")-->
+                            <circle cx="84" cy="50" r="2.48775" fill="#dce4eb">
+                                <animate attributeName="r" values="10;0;0;0;0" keyTimes="0;0.25;0.5;0.75;1" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" calcMode="spline" dur="2.1s" repeatCount="indefinite" begin="0s"></animate>
+                                <animate attributeName="cx" values="84;84;84;84;84" keyTimes="0;0.25;0.5;0.75;1" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" calcMode="spline" dur="2.1s" repeatCount="indefinite" begin="0s"></animate>
+                            </circle>
+                            <circle cx="75.5416" cy="50" r="10" fill="#2b8fde">
+                                <animate attributeName="r" values="0;10;10;10;0" keyTimes="0;0.25;0.5;0.75;1" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" calcMode="spline" dur="2.1s" repeatCount="indefinite" begin="-1.05s"></animate>
+                                <animate attributeName="cx" values="16;16;50;84;84" keyTimes="0;0.25;0.5;0.75;1" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" calcMode="spline" dur="2.1s" repeatCount="indefinite" begin="-1.05s"></animate>
+                            </circle>
+                            <circle cx="41.5416" cy="50" r="10" fill="#7b7e7f">
+                                <animate attributeName="r" values="0;10;10;10;0" keyTimes="0;0.25;0.5;0.75;1" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" calcMode="spline" dur="2.1s" repeatCount="indefinite" begin="-0.525s"></animate>
+                                <animate attributeName="cx" values="16;16;50;84;84" keyTimes="0;0.25;0.5;0.75;1" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" calcMode="spline" dur="2.1s" repeatCount="indefinite" begin="-0.525s"></animate>
+                            </circle>
+                            <circle cx="16" cy="50" r="7.51225" fill="#d3d3d3">
+                                <animate attributeName="r" values="0;10;10;10;0" keyTimes="0;0.25;0.5;0.75;1" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" calcMode="spline" dur="2.1s" repeatCount="indefinite" begin="0s"></animate>
+                                <animate attributeName="cx" values="16;16;50;84;84" keyTimes="0;0.25;0.5;0.75;1" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" calcMode="spline" dur="2.1s" repeatCount="indefinite" begin="0s"></animate>
+                            </circle>
+                            <circle cx="16" cy="50" r="0" fill="#dce4eb">
+                                <animate attributeName="r" values="0;0;10;10;10" keyTimes="0;0.25;0.5;0.75;1" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" calcMode="spline" dur="2.1s" repeatCount="indefinite" begin="0s"></animate>
+                                <animate attributeName="cx" values="16;16;16;50;84" keyTimes="0;0.25;0.5;0.75;1" keySplines="0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1;0 0.5 0.5 1" calcMode="spline" dur="2.1s" repeatCount="indefinite" begin="0s"></animate>
+                            </circle>
+                            </svg></td>  
                         <td>
                             <div class="date">{{ pending.time | date:'MMM d, y' }}</div>
                             <div class="time">{{ pending.time | date:'h:mm a' }}</div>
@@ -58,7 +80,7 @@
                                 href="{{ getTransactionUrl(pending.transactionHash) }}">{{ pending.transactionHash }} 
                             </a>
                         </td>
-                        <td class="block">(pending)</td>
+                        <td class="block hidden-xs">(pending)</td>
                         <td>
                             <a 
                                 target="_blank"
@@ -69,13 +91,13 @@
                             <div class="eth" ng-class="getSignCSS(trans.sign)"><span class="sign">{{ pending.sign }}</span>{{ pending.value.ether | number : 6 }} ETH</div>
                             <div class="usd"><span class="sign">{{ trans.sign }}</span>${{ pending.value.usd | number : 2 }} USD</div>
                         </td>
-                        <td class="gas">(pending)</td>            
+                        <td class="gas hidden-xs">(pending)</td>            
                     </tr>
                      
                     <!-- Ng-Repeat for Transfers (mined transactions) -->
                     <tr class="transfer" ng-repeat=" trans in transferList | orderBy:'-time' track by $index"> 
                     <!-- <tr ng-repeat=" trans in transferList "> -->
-                        <td class="number">{{ transferList.length - $index }}</td>
+                        <td class="number hidden-xs">{{ transferList.length - $index }}</td>
                         <td>
                             <div class="date">{{ trans.time | date:'MMM d, y' }}</div>
                             <div class="time">{{ trans.time | date:'h:mm a' }}</div>
@@ -86,7 +108,7 @@
                                 href="{{ getTransactionUrl(trans.transactionHash) }}">{{ trans.transactionHash }} 
                             </a>
                         </td>
-                        <td><a 
+                        <td class="block hidden-xs"><a 
                                 target="_blank"
                                 href="{{ getBlockUrl(trans.blockNumber) }}"> {{ trans.blockNumber }} 
                             </a>
@@ -100,7 +122,7 @@
                             <div class="eth" ng-class="getSignCSS(trans.sign)"><span class="sign">{{ trans.sign }}</span>{{ trans.value.ether | number : 6 }} ETH</div>
                             <div class="usd"><span class="sign">{{ trans.sign }}</span>${{ trans.value.usd | number : 2 }} USD</div>
                         </td>
-                        <td class="gas">
+                        <td class="gas hidden-xs">
                             <div class="">{{ trans.gas.used }}</div>
                             <div class="usd">${{ trans.gas.usd | number : 8 }}</div>
                         </td>            
