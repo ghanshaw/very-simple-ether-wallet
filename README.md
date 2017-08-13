@@ -37,16 +37,6 @@ Using the Very Simple Ether Wallet is straightforward. There are three pages: Ac
 Deploing your contract can be tricky. I reccommend experimenting with the default gas limit and price. The default gas price in truffle is 100 Gwei, which is probably much higher than you'll need it to be. I would recommend staying within 20 and 30 gwei, but increasing the gas limit past what you anticipate you'll need. 
 
 
-geth --fast --cache=1024 --rpc --rpcport 9001
-
-web3.personal.unlockAccount(web3.personal.listAccounts[0], "teirrah1963", 15000)
-
-INFO [08-05|14:41:48] Submitted contract creation              fullhash=0x40fccd1b4340a548ba27788e824f6abdb26f5945c3087c9b9b073011bca0f29b contract=0xede99e62feb446a09862193a1b40a9c513bb5f43
-
-To deploy, you'll first have to unlock your ethereum account. In geth, 
-web3.personal.unlockAccount(web3.personal.listAccounts[0], "password", 15000). Normally, accounts stay unlocked for a very short window (30 sec). By running this command, you can keep your account unlcoekd for a longer period of time, which might be helpful if you are experimenting.
-
-
 
 
 

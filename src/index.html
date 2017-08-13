@@ -31,11 +31,11 @@
             <div class="container nav-wrapper">
                 <!-- Brand and toggle get grouped for better mobile display -->
                 <div class="navbar-header">
-                <a class="navbar-brand" href="#"><img src="./src/images/logo.png"><span class="hidden-xs">Very Simple Ether Wallet</span></a>
+                <a class="navbar-brand" href="#"><img src=<%= require("./images/logo.png") %> /><span class="hidden-xs">Very Simple Ether Wallet</span></a>
                 </div>
 
                 <ul class="nav navbar-nav navbar-right">
-                    <li class="currency">USD/ETH {{ currency.USD }}</li>
+                    <li class="currency hidden-xs">USD/ETH {{ currency.USD }}</li>
                     <li><a href="#">Account</a></li>
                     <li><a href="#!/transact">Deposit/Withdrawal</a></li>
                     <li><a href="#!/about">About</a></li>
@@ -45,7 +45,7 @@
         </nav>
 
         <div class="loading-screen" ng-hide="hideLoadingScreen()">
-            <div class="web3-warning" ng-cloak ng-show="warning">
+            <div class="web3-warning" ng-cloak ng-show="!status.web3">
                 <div class="icon"><%= require('./images/error.svg') %></div>
                 <div class="heading">Shucks!</div>
                 <div class="message">This is an Ethereum distributed app. <br>You must have <a target="_blank" href="https://github.com/ethereum/web3.js/">web3</a> available on your browser to use this website.
@@ -54,7 +54,10 @@
                 <button class="btn btn-default" href="#" ng-click="reload()">Reload</button>
             </div>
             
-            <div class="load-icon" ng-hide="warning"><%= require('./images/load.svg') %></div>
+            <div class="load-wrapper" ng-hide="!status.web3">
+                <div class="message" ng-cloak>{{ status.message }}</div>
+                <div class="icon"><%= require('./images/load.svg') %></div>
+            </div>
         </div>
     
         

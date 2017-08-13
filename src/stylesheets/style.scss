@@ -41,8 +41,19 @@ html, body {
     align-items: center;
     justify-content: center;
 
-    .load-icon {
-        width: 50px;
+    .load-wrapper {
+        .message {
+            color: $primary;
+            padding: 20px;
+            text-align: center;
+            font-weight: 900;
+        }
+        
+        .icon {
+            width: 50px;
+            margin: 0 auto;
+            margin-top: 20px;
+        }
     }
 
     .web3-warning {
@@ -71,6 +82,7 @@ html, body {
 
             svg {
                 width: 100%;
+                height: 100%;
             }
         }
 
@@ -98,6 +110,29 @@ html, body {
             &:hover {
                 background-color: $secondary;
                 color: white;
+            }
+        }
+
+        @media screen and (max-width: $break-x-small) {
+            padding: 20px;
+
+            .icon {
+                width: 40px;
+                height: 40px;
+            }
+
+            .heading {
+                font-size: 30px;
+            }
+ 
+            .message {
+                font-size: 14px;
+            }
+
+            button {
+                height: 50px;
+                width: 100px;
+                font-size: 14px;
             }
         }
     }
@@ -152,10 +187,13 @@ nav.navbar {
         }
 
         .currency {
-            color: $slategrey;
-            // font-weight: bold;
-            padding: 15px 0px;
-            padding-right: 10px;
+            background-color: $secondary;
+            border-radius: 5px;
+            color: white;
+            padding: 10px;
+            margin-top: 5px;
+            /* display: none; */
+            margin-right: 10px;
         }
     }
 
@@ -295,6 +333,8 @@ nav.navbar {
         background-color: white;
         color: $primary;
     }
+
+
 }
 
 .transfer-forms {
@@ -377,6 +417,11 @@ nav.navbar {
         margin-top: 3px;
     }
 
+    .panel-title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
     .panel-body {
         padding: 25px 0px;
     }
@@ -388,6 +433,17 @@ nav.navbar {
     }
 }
 
+.transfers.panel {
+    @media screen and (max-width: $break-x-small) {
+        .panel-body {
+            padding: 0;
+        }
+
+        .col-md-12 {
+            padding: 0;
+        }
+    }
+}
 
 #transfer-table.table {
     table-layout: fixed;
@@ -404,7 +460,7 @@ nav.navbar {
         }
     }
 
-    tbody {
+    tr {
 
         td {
             text-align: center;
@@ -440,51 +496,58 @@ nav.navbar {
 
         .sign {
             margin-right: 2px;
-        }      
+        }     
+    } 
         
-        .pending {
-            color: $secondary;
+    tr.pending {
+        color: $secondary;
 
-            .icon {
-                overflow: visible;
+        .icon {
+            overflow: visible;
 
-                img {
-                    width: 100%;
-                    position: relative;
-                    left: 10px;
-                }
-            }
-
-            .block {
-                font-size: 10px;
-            }
-
-            .eth {
-                font-size: 12px;
-            }
-
-            .gas {
-                font-size: 10px;
-            }
-
-            a {
-                color: $secondary;
-                font-style: italic;
+            img {
+                width: 100%;
+                position: relative;
+                left: 10px;
             }
         }
 
-        @media screen and (max-width: $break-x-small) {
-            .time {
-                display: none;
-            }
-        
-            .date {
-                font-size: 13px;
-            }
+        .block {
+            font-size: 10px;
+        }
 
-            .eth {
-                font-size: 11px;
+        .hash {
+            span {
+                font-size: 10px;
             }
+        }
+
+        .eth {
+            font-size: 12px;
+            color: $secondary;
+        }
+
+        .gas {
+            font-size: 10px;
+        }
+
+        a {
+            color: $secondary;
+            font-style: italic;
+        }
+    }
+
+    @media screen and (max-width: $break-x-small) {
+        .time {
+            display: none;
+        }
+    
+        .date {
+            font-size: 13px;
+        }
+
+        .eth {
+            font-size: 11px;
         }
     }
 }

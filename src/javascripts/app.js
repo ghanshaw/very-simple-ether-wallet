@@ -4,11 +4,14 @@ var app = angular.module('myDapp', ['ngRoute']);
 app.service('simplewallet', function($rootScope, $http) {
 
     var self = this;
-    // self.address = SimpleWallet.address;
 
-    // Page status
-    self.loading = true;
-    self.error = false;
+    // Loading status (reflected on index controller)
+    self.status = {
+        loading: true,
+        error: false,
+        message: 'Connecting to dApp. Please confirm that MetaMask or Mist is properly configured.',
+        web3: true
+    }
 
     // Store simple wallet totals
     self.balance = {
@@ -50,13 +53,10 @@ app.service('simplewallet', function($rootScope, $http) {
     // (deposit and withdrawal events triggered)
     self.transferMap = {};
 
-    // Hash table of pending transactions
-    self.pendingMap = {};
-
-    
-    // let demoAddresses = [];
-    // let demoBalances = [];
-
+    // Hash table mapping transaction hashes to transaction ids
+    self.transferId = 0;
+    self.transactionHashToId = {};
+ 
     // Create list for demo accounts
     self.demoAccounts = [];
     let demoNames = ['A', 'B', 'C'];
@@ -75,7 +75,8 @@ app.service('simplewallet', function($rootScope, $http) {
 
 
     // Create a promise from async web3 method
-    function web3Promise(web3_async, param) {
+    var web3Promise = self.web3Promise = function(web3_async, param) {
+
         // Return a new promise
         return new Promise(function(resolve, reject) {
             
@@ -99,10 +100,14 @@ app.service('simplewallet', function($rootScope, $http) {
         result.value = {}
         result.gas = {}
 
+        /*
+            Small corner case--transaction below is both deposit and withdrawal. Functionality disabled going forward.
+        if (result.transactionHash == '0xb4ec00040aab8e021aaf94b0a99d1a7eb3a158f64c9b1d5098071d36e2645c02') {
+            console.log(result);
+        }
+        */
         
         var transaction;
-
-        // $scope.transferList.push(result);
 
         // Instantiate promise derived from async web3 methods
         web3Promise(web3.eth.getTransactionReceipt, result.transactionHash) 
@@ -111,13 +116,16 @@ app.service('simplewallet', function($rootScope, $http) {
             transaction = receipt;
             result.gas.used = transaction.gasUsed;  
 
+            // Convert gas to BigNumber
+            result.gas.usedBig = web3.toBigNumber(result.gas.used);
             // Get gas price
             return web3Promise(web3.eth.getGasPrice, null);
         })
         // Use transaction to get block
         .then(function(price) {
-            result.gas.wei = price;
-            convertToEthUsd(result.gas)
+            result.gas.price = price;
+            result.gas.wei = result.gas.usedBig.times(result.gas.price);            
+            convertToEthUsd(result.gas);
             return web3Promise(web3.eth.getBlock, transaction.blockHash);
         })
         // Get price of gas
@@ -125,44 +133,76 @@ app.service('simplewallet', function($rootScope, $http) {
         .then(function success(block) {
 
             // Transform amount to ether
-            
             result.value.wei = result.args.amount
             convertToEthUsd(result.value);
 
+            // Update transfer with sign
             if (result.event == 'DepositEvent') {
                 result.sign = '+';
                 result.to_from = result.args._sender;
+                result.type = 'deposit';
+
                 self.transfer.deposit.processing = false;
+                self.transfer.deposit.message = '';
             } else if (result.event == 'WithdrawalEvent') {
-                self.transfer.withdrawal.processing = false;
                 result.to_from = result.args.recipient;
                 result.sign = '—';
+                result.type = 'withdrawal';
+
+                self.transfer.withdrawal.processing = false;
+                self.transfer.withdrawal.message = '';
             }
 
-            result.timestamp = block.timestamp;
-            result.time = new Date(result.timestamp * 1000);
-
+            // Update status of transaction
+            result.mined = true;
+            result.pending = false;
             
             let hash = transaction.transactionHash;
-            self.transferMap[hash] = result;
-            // Remove from pending map, if there
-            if (self.pendingMap.hasOwnProperty(hash)) {
-                // delete self.pendingMap[hash];
+
+            // If transaction is not in transfer map (not pending)
+            if (!self.transactionHashToId.hasOwnProperty(hash)) {
+                // Add a time
+                result.timestamp = block.timestamp;
+                result.time = new Date(result.timestamp * 1000);
+
+                // Map id to transaction
+                self.transactionHashToId[hash] = self.transferId;
+
+                // Add transaction to transfer map
+                self.transferMap[self.transferId] = result;
+
+                // Increment transfer map
+                self.transferId++;
+            } else {
+                // Get the id 
+                let id = self.transactionHashToId[hash];
+
+                // Update transfer object
+                let transfer = self.transferMap[id];
+
+                // Transaction is both deposit and withdrawal
+                if (transfer.mined) {
+                    delete self.transferMap[id];
+                    return;
+                }
+                transfer.mined = result.mined;
+                transfer.pending = result.pending;
+                transfer.blockNumber = result.blockNumber;
+                transfer.gas = result.gas;
             }
-            $rootScope.$apply();
-
         })
-
-
         // Update balances of demo accounts
         .then(function() {
             return updateDemoBalances();
         })
-
         // Update wallet balance and deposit/withdraw summary
         .then(function() {
             updateDepositWithdraw();
             return updateWalletBalance();
+        })
+        // Update scope
+        .then(function() {
+            $rootScope.$apply();
         })
         // Catch errors
         .catch(function(error) {
@@ -175,8 +215,6 @@ app.service('simplewallet', function($rootScope, $http) {
     // Convert from wei to ether and dollars (and attach function to scope)
     var convertToEthUsd = self.convertToEthUsd = function(valueObj) {
         valueObj.ether = web3.fromWei(valueObj.wei, 'ether').toNumber();
-        // if (typeof valueObj.eth === 'BigNumber') {
-        //     valueObj.ether = valueObj.ether.toNumber();
         valueObj.usd = valueObj.ether * self.currency.USD;
     }
 
@@ -186,21 +224,19 @@ app.service('simplewallet', function($rootScope, $http) {
         self.deposits.wei = web3.toBigNumber(0);
         self.withdrawals.wei = web3.toBigNumber(0);
 
-        for (hash in self.transferMap) {
-            let transfer = self.transferMap[hash];
+        for (id in self.transferMap) {
+            let transfer = self.transferMap[id];
 
-            if (transfer.event === 'DepositEvent') {
+            if (transfer.type === 'deposit') {
                 self.deposits.wei = self.deposits.wei.add(transfer.value.wei);
             }
 
-            if (transfer.event === 'WithdrawalEvent') {
+            if (transfer.type === 'withdrawal') {
                 self.withdrawals.wei = self.withdrawals.wei.add(transfer.value.wei);
             }
         }
         convertToEthUsd(self.deposits);
         convertToEthUsd(self.withdrawals);
-
-        $rootScope.$apply();
     }
 
     // Returns a promise that resovles when all demo accounts have been updated
@@ -231,12 +267,12 @@ app.service('simplewallet', function($rootScope, $http) {
             .then(function(total) {
                 self.balance.wei = total;
                 convertToEthUsd(self.balance);
-
+                $rootScope.$apply();
                 return Promise.resolve(1);
             })
             .catch(function(error){
                 console.error(error);
-                this.error = true;
+                self.error = true;
             })
     }
 
@@ -256,23 +292,33 @@ app.service('simplewallet', function($rootScope, $http) {
         self.currency.BTC = response.data.BTC;
         self.currency.USD = response.data.USD;
         self.currency.EUR = response.data.EUR;
-        console.log('GOT CURRENCIES');
     }, function errorCallback(response) {
         console.error(response);
-        // called asynchronously if an error occurs
-        // or server returns response with an error status.
     });
 
     /******************************************
-     * Promise Chain
+     * Promise Chain (set up Simple Wallet app, resolve various callbacks)
      ******************************************/
     
+    self.user = {};
+
     var contract;
     // Get the contract
     self.loaded = window.SimpleWallet.deployed().then(function(instance) {
         contract = self.contract = instance;
         
+        self.status.message = 'Aquiring accounts. Please confirm that MetaMask and Mist are properly configured.';
+        $rootScope.$apply();
+        return web3Promise(web3.eth.getAccounts);
+    })
+
+    // Get user's accounts, attach to simple wallet
+    .then(function(accounts) {
+        self.user.accounts = accounts;
+
         // Resolve currency promise
+        self.status.message = 'Aquiring current Ether and USD prices.'; 
+        $rootScope.$apply();       
         return currencyPromise;
     })
 
@@ -284,6 +330,8 @@ app.service('simplewallet', function($rootScope, $http) {
         }   
 
         // Resolve demo account addresses
+        self.status.message = 'Updating demo accounts.';
+        $rootScope.$apply();
         return Promise.all(demoAddresses);
     })
 
@@ -294,94 +342,67 @@ app.service('simplewallet', function($rootScope, $http) {
         }
 
         // Get demo account balances
+        self.status.message = 'Updating demo accounts'; 
+        $rootScope.$apply();       
         return updateDemoBalances();        
     })
 
     // Get smart wallet balance
     .then(function() {
+
+        self.status.message = 'Updating wallet balance.';
+        $rootScope.$apply();
         return updateWalletBalance();
     })    
 
     // Start event listener
     .then(function() {
 
-        self.loading = false;
+        self.status.loading = false;
+        self.status.message = '';
 
         self.events = contract.allEvents({
             fromBlock: 0, 
             toBlock: 'latest', }, 
-        allEventsCallback);
+        allEventsCallback);        
 
-        // alert('all done loading');
         $rootScope.$apply();
         return Promise.resolve();
     })
 
     // Catch errors
     .catch(function(error) {
+        self.status.message = 'An error occured. Please check console and reload page.';
+        self.status.error = true;
         console.log(error);
-        self.error = true;
+        $rootScope.$apply();
     })
 
 })
 
 app.controller("mainController", function($scope, simplewallet) {
 
+    // Hash tables storing mined and pending transactions
     $scope.transferMap = simplewallet.transferMap;
-    $scope.pendingMap = simplewallet.pendingMap;
-
     $scope.transferList = [];
-    $scope.pendingList = [];
-    
 
     // When an event is triggered
     $scope.$watch('transferMap', function() {
-        console.log('updating table');
         updateTransferList();
-        updatePendingList();
     }, true);
 
+    // Move transactions in map to array
     function updateTransferList() {
         $scope.transferList = [];
-        for (hash in $scope.transferMap) {
-            let transfer = $scope.transferMap[hash];
+        for (id in $scope.transferMap) {
+            let transfer = $scope.transferMap[id];
             $scope.transferList.push(transfer);
-
-            // If this transaction is in the pending map, remove it
-            if ($scope.pendingMap.hasOwnProperty(hash)) {
-                delete $scope.pendingMap[hash];
-            }
         }
     }
-
-    function updatePendingList() {
-        $scope.pendingList = [];
-        // $scope.pendingList.push({
-        //     sign : "+",
-        //     status: "pending",
-        //     time : 1502086911299,
-        //     to_from: "0x1c942838e6e078269afb818eff33d5d91abd3a27",
-        //     transactionHash: "0x23401edde6d52d70a419f13671b817928fa972192edac557126eacdfce60acdc",
-        //     type: "deposit",
-        //     value: {
-        //         ether: 0.000190381906103643,
-        //         usd: 0.04999999999999976,
-        //         wei: 1,
-        //     },
-        // })
-        
-        for (hash in $scope.pendingMap) {
-            let pending = $scope.pendingMap[hash];
-            // convertToEthUsd(pending.value);
-            $scope.pendingList.push(pending);
-        }
-    }
-
-
 
     // Set up dummy value for contract address
     $scope.contract = {
-        address: '...',
+        address: null,
     };
 
     // Update address if simple wallet contract has loaded
@@ -389,10 +410,13 @@ app.controller("mainController", function($scope, simplewallet) {
         $scope.contract = simplewallet.contract;
         $scope.$apply();
     });
+
+    // Get balance, deposits and withdrawal totals from simplewallet
     $scope.balance = simplewallet.balance;
     $scope.deposits = simplewallet.deposits;
     $scope.withdrawals = simplewallet.withdrawals;
 
+    // Update CSS based on sign of funds
     $scope.getSignCSS = function(sign) {
         var css;
         if (sign === '—') {
@@ -400,13 +424,10 @@ app.controller("mainController", function($scope, simplewallet) {
         } else if (sign === '+') {
             css = 'positive';
         }
-        else {
-            css = 'akjsldfasf';
-        }
-
         return css;
     }
 
+    // Create URLs from transactions
     $scope.getTransactionUrl = function(tx) {
         var url = 'https://etherscan.io/tx/'
         return url + tx;
@@ -426,60 +447,54 @@ app.controller("mainController", function($scope, simplewallet) {
 
 app.controller('indexController', function($scope, simplewallet) {
 
-    $scope.loading = simplewallet.loading;
-    $scope.warning = false;
+    // $scope.loading = simplewallet.loading;
+    $scope.status = simplewallet.status;
 
+    // Get currency from Simple Wallet for navbar
     simplewallet.loaded.then(function() {
         $scope.currency = simplewallet.currency;
     });
 
+    // Hide loading screen
     $scope.hideLoadingScreen = function () {
-        console.log($scope.warning);
-        console.log($scope.loading)
-        return !$scope.warning && !simplewallet.loading;
+        return $scope.status.web3 && !$scope.status.loading;
     }
 
     // Checking if Web3 has been injected by the browser (Mist/MetaMask)
     if (typeof web3 !== 'undefined') {
         console.info("Using web3 detected from external source.")
-        $scope.warning = false;
-        // Use Mist/MetaMask's provider
+
+        $scope.status.web3 = true;
+        // Use MetaMask's provider
         window.web3 = new Web3(web3.currentProvider);
     } else {
-        $scope.warning = true;
-        console.warn("No web3 detected. Please consider using Ethereum browser Mist or MetaMask");
+        // Get web3 from Mist
+        web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+
+        if (typeof web3 !== 'undefined') {
+            $scope.status.web3 = false;
+            console.warn("No web3 detected. Please consider using Ethereum browser Mist or MetaMask");
+        }
     }
 
-        // $scope.$apply();
-
-    // window.addEventListener('load', function() {
-        
-    // });
-
+    // Reload button
     $scope.reload = function() {
         window.location.reload();
     }
 
-    // alert('alsjdfljas');
-
 });
 
 
-app.controller('aboutController', function($scope) {
-
-    
-
-});
+app.controller('aboutController', function($scope) {});
 
 
-app.controller("transactController", function($scope, simplewallet) {
+app.controller("transactController", function($scope, $rootScope, simplewallet) {
  
-    
-    
+    // Update model when Simple Wallet promise chain resolves
     var contract;
     var currency;
     var demoAccounts; 
-    var convertToEthUsd
+    var convertToEthUsd;
     simplewallet.loaded.then(function() {
 
         contract = simplewallet.contract;
@@ -498,167 +513,123 @@ app.controller("transactController", function($scope, simplewallet) {
         }
         
         $scope.pendingMap = simplewallet.pendingMap;
-
-        // alert('all done');
         $scope.$apply();
-
     });
 
-    /******************************************
-     * Pagination
-     ******************************************/
-
-
-    
-    // $scope.itemsPerPage = 5;
-    
-    // $scope.filteredItems = [];
-    // $scope.groupedItems = [];
-    // $scope.itemsPerPage = 5;
-    // $scope.pagedItems = [];
-    // $scope.currentPage = 0;
-    
-    // // calculate page in place
-    // $scope.groupToPages = function () {
-    //     $scope.pagedItems = [];
+    var web3Promise = simplewallet.web3Promise;
+    // Check that Ether accounts are available, retrieve otherwise
+    var checkAccounts = function() {
         
-    //     // Build 2D array of pages
-    //     for (var i = 0; i < $scope.transferList.length; i++) {
+        return new Promise(function(resolve, reject) {
+            if (!simplewallet.user.accounts) {
+                return web3Promise(web3.eth.getAccounts);
+            }
+            else {
+                resolve(simplewallet.user.accounts);
+            }
+        })
+    }
 
-    //         // Beginning of page, create new array
-    //         if (i % $scope.itemsPerPage === 0) {
-    //             $scope.pagedItems[Math.floor(i / $scope.itemsPerPage)] = [ $scope.transferList[i] ];
-    //         } else {
-    //             $scope.pagedItems[Math.floor(i / $scope.itemsPerPage)].push($scope.filteredItems[i]);
-    //         }
-    //     }
-    // };
+    $scope.transferMap = simplewallet.transferMap;
+    var createTransactionPlaceholder = function(amount, address, type) {
 
-    // // Construct range
-    // $scope.range = function (size, start, end) {
-    //     var ret = [];        
-    //     console.log(size,start, end);
-                      
-    //     if (size < end) {
-    //         end = size;
-    //         start = size-$scope.gap;
-    //     }
-    //     for (var i = start; i < end; i++) {
-    //         ret.push(i);
-    //     }        
-    //      console.log(ret);        
-    //     return ret;
-    // };
+        // Get ether and usd conversions
+        let value = { wei: web3.toBigNumber(amount) }
+        convertToEthUsd(value);
 
-    // $scope.prevPage = function () {
-    //     if ($scope.currentPage > 0) {
-    //         $scope.currentPage--;
-    //     }
-    // };
+        let id = simplewallet.transferId;
 
+        // Add transaction to transfer map
+        $scope.transferMap[id] = {
+            transactionHash: '',
+            mined: false,
+            pending: true,
+            type: type,
+            timestamp: Date.now(),
+            time: new Date(),
+            to_from: address,
+            value: value
+        }
 
-    // $scope.nextPage = function () {
-    //     if ($scope.currentPage < $scope.pagedItems.length - 1) {
-    //         $scope.currentPage++;
-    //     }
-    // };
+        if (type == 'deposit') {
+            $scope.transferMap[id].sign = '+';
+        } else if (type === 'withdrawal') {
+            $scope.transferMap[id].sign = '—';
+        }
+
+        // Increment transfer id
+        simplewallet.transferId++;
+        return id;
+    }
+        
     
-    // $scope.setPage = function () {
-    //     $scope.currentPage = this.n;
-    // };
-
 
     /******************************************
      * Deposit Methods
      ******************************************/
 
-    // function depositFromAddress(amount, address) {
-
-    //     web3.eth.sendTransaction(
-    //         { 
-    //             from: address, 
-    //             to: contract.address, 
-    //             value: amount
-    //         }, function(error, result) {
-    //             if (error) {
-    //                 $scope.transfer.deposit.success = false;
-    //                 $scope.transfer.deposit.error = true;
-    //                 $scope.transfer.deposit.message = "Deposit failed. Please see console for more details. \
-    //                                                 Confirm that originating account has enough funds before attempting a transfer.";
-    //                 console.error(error.stack); 
-    //             } else {
-    //                 $scope.transfer.deposit.success = true;
-    //                 $scope.transfer.deposit.error = false;
-    //                 $scope.transfer.deposit.message = "Deposit initiated. Please check Account page for status.";
-    //             }
-    //             $scope.$apply();
-    //         }
-    //     );
-
-    // }
-
+    // Attach transfer messages to simple wallet
     $scope.transfer = simplewallet.transfer;
 
     function depositFromDemo(amount, index, address) {
 
-        // let zero = web3.toBigNumber(0);
-        // if (demoAccounts[index].wei.equals(zero)) {
-        //     $scope.transfer.deposit.processing = false;
-        //     $scope.transfer.deposit.success = false;
-        //     $scope.transfer.deposit.message = "Cannot transfer funds from empty account.";
-        //     return;
-        // }
+        // Check that deposit is possible
+        let zero = web3.toBigNumber(0);
+        if (demoAccounts[index].wei.equals(zero)) {
+            $scope.transfer.deposit.processing = false;
+            $scope.transfer.deposit.success = false;
+            $scope.transfer.deposit.message = "Cannot transfer funds from empty account.";
+            return;
+        }
 
-        // if (demoAccounts[index].wei.lessThan(amount)) { 
-        //     $scope.transfer.deposit.processing = false;
-        //     $scope.transfer.deposit.success = false;
-        //     $scope.transfer.deposit.message = "Funds are insufficient to complete this deposit.";
-        //     // console.error(error.stack);
-        //     return;
-        // };
+        if (demoAccounts[index].wei.lessThan(amount)) { 
+            $scope.transfer.deposit.processing = false;
+            $scope.transfer.deposit.success = false;
+            $scope.transfer.deposit.message = "Funds are insufficient to complete this deposit.";
+            return;
+        };
 
-        var res = contract.transferFromDemo(amount, index, {
+        // Create transaction placeholder
+        let transferId = createTransactionPlaceholder(amount, address, 'deposit');
+
+        // Check for Ether account and then invoke contract method
+        checkAccounts().then(function(accounts) {
+            simplewallet.user.accounts = accounts;
+            
+            return contract.transferFromDemo(amount, index, {
                 // Sign transaction with first available account
-                from: web3.eth.accounts[0],
-            }).then(function(res) {
+                from: simplewallet.user.accounts[0],
+            })
+        
+        }).then(function(res) {
 
-                // Attach wei to result object
-                res.value = { wei: web3.toBigNumber(amount) }
+            // Update transaction hash in transfer map
+            $scope.transferMap[transferId].transactionHash = res.tx;
 
-                // Convert wei to USD and ETH
-                convertToEthUsd(res.value);
+            // Map transaction hash to transfer id
+            simplewallet.transactionHashToId[res.tx] = transferId;
 
-                // Add withdrawal to pending map
-                $scope.pendingMap[res.tx] = {
-                    transactionHash: res.tx,
-                    status: 'pending',
-                    type: 'deposit',
-                    time: Date.now(),
-                    to_from: address,
-                    value: res.value,
-                    sign: '+'
-                }
-
-            console.log('HOT LIKE FIRE - DEPOSIT');
             $scope.transfer.deposit.processing = false;
             $scope.transfer.deposit.success = true;
             $scope.transfer.deposit.message = "Deposit initiated. Please check Account page for status.";
 
-            $scope.$apply();
+            $rootScope.$apply();
         }).catch(function(error) {
+
+            // Remove dummy transaction from pending map
+            delete $scope.transferMap[transferId];
+
             $scope.transfer.deposit.processing = false;
             $scope.transfer.deposit.success = false;
             $scope.transfer.deposit.message = "Deposit failed. Please see console for more details. \
                                                Confirm that originating account has enough funds before attempting a transfer.";
             console.error(error.stack);
-            $scope.$apply();
+            $rootScope.$apply();
         })
-
-        console.log(res);
-
     }
 
 
+    // Set up deposit
     $scope.depositFunds = function(amount) {  
         
         $scope.transfer.deposit.message = '';
@@ -668,8 +639,9 @@ app.controller("transactController", function($scope, simplewallet) {
         amount /= currency.USD;
         amount = Math.floor(web3.toWei(amount, "ether"));
     
-        var account = $scope.addressFrom.demo;
+        // Get address of demo account
         var index;
+        var account = $scope.addressFrom.demo;
         for (var i = 0; i < 3; i++) {
             if ($scope.addressFrom.demo.name == demoAccounts[i].name) {
                 index = i;
@@ -684,47 +656,52 @@ app.controller("transactController", function($scope, simplewallet) {
      * Withdrawal Methods
      ******************************************/
 
+    // Execute withdrawawl
     function withdrawToAddress(amount, address) {
 
+        // Create transaction placeholder
+        let transferId = createTransactionPlaceholder(amount, address, 'withdrawal');
+
+        // Check that deposit is possible
+        if (address === contract.address) {
+            $scope.transfer.withdrawal.processing = false;
+            $scope.transfer.withdrawal.success = false;
+            $scope.transfer.withdrawal.message = "Wallet cannot withdraw into itself.";
+            return;
+        }
+
         contract.transferToAddress(amount, address, {
-                from: web3.eth.accounts[0],
+                from: simplewallet.user.accounts[0],
             }).then(function success(res) {
 
-                // Attach wei to result object
-                res.value = { wei: web3.toBigNumber(amount) }
+                // Update transaction hash in transfer map
+                $scope.transferMap[transferId].transactionHash = res.tx;
+            
+                // Map transaction hash to transfer id
+                simplewallet.transactionHashToId[res.tx] = transferId;
 
-                // Convert wei to USD and ETH
-                convertToEthUsd(res.value);
-
-                // Add withdrawal to pending map
-                $scope.pendingMap[res.tx] = {
-                    transactionHash: res.tx,
-                    status: 'pending',
-                    type: 'withdrawal',
-                    time: Date.now(),
-                    to_from: address,
-                    value: res.value,
-                    sign: '-'
-                }
-
-                console.log('HOT LIKE FIRE - WITHDRAWAL');
                 $scope.transfer.withdrawal.processing = false;
                 $scope.transfer.withdrawal.success = true;
                 $scope.transfer.withdrawal.message = "Withdrawal initiated. Please check Account page for status.";
-                $scope.$apply();
+
+                // Force update on all views (main in particular)
+                $rootScope.$apply();
 
             }, function failure(error) {
+
+                // Remove dummy transaction from pending map
+                delete $scope.transferMap[transferId];
 
                 $scope.transfer.withdrawal.processing = false;
                 $scope.transfer.withdrawal.success = false;
                 $scope.transfer.withdrawal.message = "Withdrawal failed. Please see console for more details. \
                                                       Confirm that Simple Wallet has enough funds before attempting a transfer.";
                 console.error(error.stack);
-                $scope.$apply();
+                $rootScope.$apply();
             });
     };
 
-
+    // Set up withdrawal
     $scope.withdrawFunds = function(amount) {  
         
         $scope.transfer.deposit.message = '';
@@ -766,150 +743,3 @@ app.config(function($routeProvider) {
     })
 
 });
-
-
-
-
-                // var withdrawPromise = new Promise(function(resolve, reject) {
-                //      web3.eth.getTransaction(result.transactionHash, function(error, transaction) {
-                //          if (error) {
-                //              reject(error);
-                //          }
-                         
-    //             //          web3.eth.getBlock(transaction.blockHash, true, function(error, block) {
-    //             //              if (error) {
-    //             //                  return reject(error);
-    //             //              }
-
-    //             //              return resolve(block.timestamp);
-    //             //          }) 
-    //             //      })
-    //             // });]]]
-
-
-
-    // var simplewallet;
-    // var simpleWalletPromise = SimpleWallet.deployed();
-
-    // // var getBalance = function(address) {
-
-    // //     return new Promise(function(resolve, reject) {
-    // //             web3.eth.getBalance(contract.address, function(err, res) {
-    // //             if (err) {
-    // //                 console.error(err);
-    // //             } else {
-    // //                 $scope.balance = res.toNumber();
-    // //                 $scope.balanceInEther = web3.fromWei($scope.balance, 'ether');
-    // //             }          
-    // //         });
-    // //     })
-
-    // // }
-
-    // // var getBalances = function() {
-
-    // //     $scope.demoAccounts = [];
-
-    // //     var balancePromises = [];
-    // //     for (demo of $scope.demoAccounts) {
-    // //         balancePromises.push(getBalance(demo.address));
-    // //     }
-
-    // //     Promise.all(balancePromises).then(function(balances) {
-
-    // //         for (var i = 0; i < 3; i++) {
-    // //             $scope.demoAccounts[i].balance = balances[i];
-    // //         }
-    // //         $scope.$apply();
-    // //     })
-    // // }
-    
-    // $scope.demoAccounts = [];
-    // var names = ['A', 'B', 'C'];
-    // for (let i = 0; i < 3; i++) {
-    //     $scope.demoAccounts.push({
-    //         address: null,
-    //         balance: null,
-    //         name: 'Account ' + names[i] 
-    //     });
-    // }
-
-
-
-    // $scope.withdrawFunds = function(address, amount) {
-   
-    //     contractPromise.then(function(contract) {
-           
-    //         contract.sendFunds(web3.toWei(amount, 'ether'), address, {
-    //             from: $scope.accounts[0],
-
-    //         }).then(function success(res) {
-    //             $scope.transfer_success = true;
-    //             $scope.newBalance = res;
-    //             $scope.$apply();
-    //         }, function error(err) {
-    //             $scope.transfer_error = err;
-    //             $scope.transfer_success = false;
-    //             $scope.$apply();
-    //         });
-
-    //     });
-    // }
-
-
-
-    // // Update Demo Accounts
-    // simpleWalletPromise.then(function(instance) {
-    //     simplewallet = instance;
-    // }).then(function() {
-
-    //     var demoAddresses = [];
-    //     var demoBalances = [];
-    //     for (var i = 0; i < 3; i++) {
-    //         demoAddresses.push(simplewallet.getDemoAccountAddress.call(i));
-    //         demoBalances.push(simplewallet.getDemoAccountBalance.call(i));
-    //     }
-
-        
-
-    //     // getAddresses();
-    //     // getBalances();
-
-    //     Promise.all(demoAddresses).then(function(result) {
-    //         console.log(result);
-    //         for (let i = 0; i < 3; i++) {
-    //             $scope.demoAccounts[i].address = result[i];
-    //         }
-    //         $scope.$apply();
-    //     });
-
-    //     Promise.all(demoBalances).then(function(result) {
-    //         console.log(result);
-    //         for (let i = 0; i < 3; i++) {
-    //             $scope.demoAccounts[i].balance = result[i].toNumber();
-    //         }
-    //         $scope.$apply();
-    //     });
-        
-    // })
-
-
-    // var updateDemoBalances = function() {
-
-    //     for (var i = 0; i < 3; i++) {
-    //         demoBalances.push(simplewallet.getDemoAccountBalance.call(i));
-    //     }
-
-    //     Promise.all(demoBalances).then(function(result) {
-    //         console.log(result);
-    //         for (let i = 0; i < 3; i++) {
-    //             $scope.demoAccounts[i].balance = result[i].toNumber();
-    //         }
-    //         $scope.$apply();
-    //     });
-    // }
-    
-
-    // var updateDemoBalances = 
-
-    // https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=BTC,USD,EUR

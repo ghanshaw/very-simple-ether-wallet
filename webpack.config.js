@@ -19,7 +19,6 @@ module.exports = {
       new FaviconsWebpackPlugin({
          // Your source logo
         logo: './src/images/logo.png',
-        emitStats: true,
         inject: true,
       }),
       new HtmlWebpackPlugin({
@@ -46,6 +45,10 @@ module.exports = {
       {
           test: /\.svg$/,
           loader: 'raw-loader'
+      },
+      {
+          test: /\.(png)$/,
+          loader: 'file-loader'
       },
       {
         test: /\.scss$/,
